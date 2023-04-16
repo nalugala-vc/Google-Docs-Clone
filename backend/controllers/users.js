@@ -1,25 +1,32 @@
 import User from "../models/User.js";
+import jwt from "jsonwebtoken";
 export const signup = async(req, res, next) => {
     try {
         const { email, name, profileURL} = req.body;
 
-        const existingUser = await User.findOne({ email: email});
+        let user = await User.findOne({ email: email});
 
-        if(existingUser){
-            return res.status(403).json({ message:"User already exists"});
-        }
+        if(!user){
+            user = new User({
+                email,
+                name,
+                profileURL
+            });
+    
+            user = await user.save();
+        }  
 
-        const newUser = new User({
-            email,
-            name,
-            profileURL
-        });
+        const token = jwt.sign({id: user._id},"passwordKey");
 
-        const savedUser = await newUser.save();
-
-        return res.status(200).json({ user: savedUser});
+        return res.status(200).json({ user: user, token : token});
 
     } catch (error) {
         return res.status(500).json({ message: error.message});
     }
+}
+
+export const getUser = async (req, res) => {
+    const user =await User.findById(req.user);
+
+    res.json({ user: user, token: req.token});
 }
