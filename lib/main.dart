@@ -1,9 +1,11 @@
 import 'package:amazonclone/models/error_model.dart';
 import 'package:amazonclone/repository/auth_repository.dart';
+import 'package:amazonclone/router.dart';
 import 'package:amazonclone/screens/home_screen.dart';
 import 'package:amazonclone/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:routemaster/routemaster.dart';
 
 void main() {
   runApp(const ProviderScope(
@@ -38,8 +40,7 @@ class _MyAppState extends ConsumerState<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    final user = ref.watch(userProvider);
-    return MaterialApp(
+    return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       title: 'Amazon Clone',
       theme: ThemeData(
@@ -54,7 +55,17 @@ class _MyAppState extends ConsumerState<MyApp> {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: user == null ? const LoginScreen() : const HomeScreen(),
+      routerDelegate: RoutemasterDelegate(
+        routesBuilder: (context) {
+          final user = ref.watch(userProvider);
+          if (user != null && user.token.isNotEmpty) {
+            return loggedInRoute;
+          }
+
+          return loggedOutRoute;
+        },
+      ),
+      routeInformationParser: const RoutemasterParser(),
     );
   }
 }
