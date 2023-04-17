@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:amazonclone/common/widgets/loader.dart';
 import 'package:amazonclone/models/document_model.dart';
 import 'package:amazonclone/models/error_model.dart';
@@ -6,8 +8,10 @@ import 'package:amazonclone/repository/document_repository.dart';
 import 'package:amazonclone/repository/socket_repository.dart';
 import 'package:amazonclone/utils/colors.dart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quil;
+import 'package:routemaster/routemaster.dart';
 
 class DocumentScreen extends ConsumerStatefulWidget {
   final String id;
@@ -39,12 +43,12 @@ class _DocumentScreenState extends ConsumerState<DocumentScreen> {
       );
     });
 
-    // Timer.periodic(const Duration(seconds: 2), (timer) {
-    //   socketRepository.autoSave(<String, dynamic>{
-    //     'delta': _controller!.document.toDelta(),
-    //     'room': widget.id,
-    //   });
-    // });
+    Timer.periodic(const Duration(seconds: 2), (timer) {
+      socketRepository.autoSave(<String, dynamic>{
+        'delta': _controller!.document.toDelta(),
+        'room': widget.id,
+      });
+    });
   }
 
   void fetchDocumentData() async {
@@ -99,7 +103,18 @@ class _DocumentScreenState extends ConsumerState<DocumentScreen> {
             Padding(
               padding: const EdgeInsets.all(10.0),
               child: ElevatedButton.icon(
-                onPressed: () {},
+                onPressed: () {
+                  Clipboard.setData(ClipboardData(
+                          text:
+                              'http://localhost:3000/#/document/${widget.id}'))
+                      .then((value) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Link Copied'),
+                      ),
+                    );
+                  });
+                },
                 icon: Icon(
                   Icons.lock,
                   size: 16,
@@ -115,9 +130,14 @@ class _DocumentScreenState extends ConsumerState<DocumentScreen> {
             padding: const EdgeInsets.symmetric(vertical: 9.0),
             child: Row(
               children: [
-                Image.asset(
-                  'assets/images/docs-logo.png',
-                  height: 40,
+                GestureDetector(
+                  onTap: () {
+                    Routemaster.of(context).replace('/');
+                  },
+                  child: Image.asset(
+                    'assets/images/docs-logo.png',
+                    height: 40,
+                  ),
                 ),
                 const SizedBox(
                   width: 10,

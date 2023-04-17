@@ -5,6 +5,7 @@ import cors from 'cors';
 import http from 'http';
 import socket from 'socket.io';
 import documentRouter from './routes/documents.js';
+import Document from "./models/Document.js";
 
 /*CONFIGURATIONS*/
 const app = express();
@@ -46,6 +47,12 @@ io.on("connection", (socket) => {
     saveData(data);
   });
 });
+
+const saveData = async (data) => {
+    let document = await Document.findById(data.room);
+    document.content = data.delta;
+    document = await document.save();
+  };
 
 server.listen(PORT, () => {
     console.log(`connected at port ${PORT}`);
