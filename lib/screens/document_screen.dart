@@ -2,6 +2,7 @@ import 'package:amazonclone/models/document_model.dart';
 import 'package:amazonclone/models/error_model.dart';
 import 'package:amazonclone/repository/auth_repository.dart';
 import 'package:amazonclone/repository/document_repository.dart';
+import 'package:amazonclone/repository/socket_repository.dart';
 import 'package:amazonclone/utils/colors.dart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -21,10 +22,12 @@ class _DocumentScreenState extends ConsumerState<DocumentScreen> {
 
   final quil.QuillController _controller = quil.QuillController.basic();
   ErrorModel? errorModel;
+  SocketRepository socketRepository = SocketRepository();
 
   @override
   void initState() {
     super.initState();
+    socketRepository.joinRoom(widget.id);
     fetchDocumentData();
   }
 
