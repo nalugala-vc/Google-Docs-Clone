@@ -38,9 +38,9 @@ class DocumentREpository {
       var statusCode = res.statusCode;
       var message = res.body;
 
-      print("status code $statusCode");
-      print("response $message");
-      print("token $token");
+      // print("status code $statusCode");
+      // print("response $message");
+      // print("token $token");
 
       switch (res.statusCode) {
         case 200:
@@ -75,9 +75,9 @@ class DocumentREpository {
       var statusCode = res.statusCode;
       var message = res.body;
 
-      print("status code $statusCode");
-      print("response $message");
-      print("token $token");
+      // print("status code $statusCode");
+      // print("response $message");
+      // print("token $token");
 
       switch (res.statusCode) {
         case 200:
@@ -100,5 +100,61 @@ class DocumentREpository {
     }
 
     return error;
+  }
+
+  Future<ErrorModel> getDocumentById(String token, String id) async {
+    ErrorModel error =
+        ErrorModel(error: "Some unexpected error occurred", data: null);
+
+    try {
+      var res = await _client.get(
+        Uri.parse('$host/document/mydocs/title/$id'),
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+          'x-auth-token': token
+        },
+      );
+      var statusCode = res.statusCode;
+      var message = res.body;
+
+      // print("status code $statusCode");
+      // print("response $message");
+      // print("token $token");
+
+      switch (res.statusCode) {
+        case 200:
+          error =
+              ErrorModel(error: null, data: DocumentModel.fromJson(res.body));
+          break;
+        default:
+          throw 'This document does not exist. Please create a new one';
+      }
+    } catch (e) {
+      error = ErrorModel(error: e.toString(), data: null);
+      print("catch error: " + e.toString());
+    }
+
+    return error;
+  }
+
+  void updateTitle({
+    required String token,
+    required String id,
+    required String title,
+  }) async {
+    var res = await _client.patch(
+      Uri.parse('$host/document/title'),
+      headers: {
+        'Content-Type': 'application/json; charset=UTF-8',
+        'x-auth-token': token,
+      },
+      body: jsonEncode({
+        'title': title,
+        'id': id,
+      }),
+    );
+    var message = res.body;
+    var code = res.statusCode;
+    print("response: $code , $message");
   }
 }

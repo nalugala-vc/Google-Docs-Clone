@@ -28,3 +28,27 @@ export const getUserDocuments = async (req, res, next) => {
         return res.status(500).json(error.message);
     }
 }
+
+export const updateTitle = async (req, res, next) => {
+    try {
+        const {id, title} = req.body;
+
+        const document = await Document.findByIdAndUpdate(id,{title});
+
+        res.json(document);
+    } catch (error) {
+        return res.status(500).json(error.message);
+    }
+}
+
+export const getTitle = async (req, res, next) => {
+    try {
+        let id = req.params.id;
+
+        const document = await Document.findById(id);
+
+        res.json(document);
+    } catch (error) {
+        return res.status(500).json(error.message);
+    }
+}

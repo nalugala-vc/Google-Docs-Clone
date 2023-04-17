@@ -1,3 +1,7 @@
+import 'package:amazonclone/models/document_model.dart';
+import 'package:amazonclone/models/error_model.dart';
+import 'package:amazonclone/repository/auth_repository.dart';
+import 'package:amazonclone/repository/document_repository.dart';
 import 'package:amazonclone/utils/colors.dart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,12 +20,35 @@ class _DocumentScreenState extends ConsumerState<DocumentScreen> {
       TextEditingController(text: 'Untitled Document');
 
   final quil.QuillController _controller = quil.QuillController.basic();
+  ErrorModel? errorModel;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchDocumentData();
+  }
+
+  void fetchDocumentData() async {
+    errorModel = await ref
+        .read(documentRepositoryProvier)
+        .getDocumentById(ref.read(userProvider)!.token, widget.id);
+
+    if (errorModel!.data != null) {
+      titleController.text = (errorModel!.data as DocumentModel).title;
+      setState(() {});
+    }
+  }
 
   @override
   void dispose() {
     // TODO: implement dispose
     super.dispose();
     titleController.dispose();
+  }
+
+  void updateTitle(WidgetRef ref, String title) {
+    ref.read(documentRepositoryProvier).updateTitle(
+        token: ref.read(userProvider)!.token, id: widget.id, title: title);
   }
 
   @override
@@ -60,13 +87,15 @@ class _DocumentScreenState extends ConsumerState<DocumentScreen> {
                   child: TextField(
                     controller: titleController,
                     decoration: const InputDecoration(
-                        border: InputBorder.none,
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            color: blueColor,
-                          ),
+                      border: InputBorder.none,
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: blueColor,
                         ),
-                        contentPadding: EdgeInsets.only()),
+                      ),
+                      contentPadding: EdgeInsets.only(),
+                    ),
+                    onSubmitted: (value) => updateTitle(ref, value),
                   ),
                 ),
               ],
