@@ -20,11 +20,33 @@ app.use(express.json());
 app.use('/user', userRouter);
 app.use('/document', documentRouter);
 
-mongoose.connect('mongodb+srv://vanessachebukwa:BntA642PimCtGjtU@cluster0.ipnefbh.mongodb.net/GoogleDocsClone?retryWrites=true&w=majority').then(()=> io.on('connections', (socket)=> {
-    console.log('connected'+ socket.id);
-    socket.on('join',(documentId)=>{
-        socket.join(documentId);
-        console.log('joined');
-    });
-})).then(()=> server.listen(PORT)).then(()=>console.log(`Connected to database and listening on port ${PORT}`));
+const DB =
+  "mongodb+srv://vanessachebukwa:BntA642PimCtGjtU@cluster0.ipnefbh.mongodb.net/GoogleDocsClone?retryWrites=true&w=majority";
 
+mongoose
+  .connect(DB)
+  .then(() => {
+    console.log(`Connected to database`);
+  })
+  .catch((err) => {
+    console.log(err);
+  });
+
+io.on("connection", (socket) => {
+  socket.on("join", (documentId) => {
+    socket.join(documentId);
+    console.log('joined');
+  });
+
+  socket.on("typing", (data) => {
+    socket.broadcast.to(data.room).emit("changes", data);
+  });
+
+  socket.on("save", (data) => {
+    saveData(data);
+  });
+});
+
+server.listen(PORT, () => {
+    console.log(`connected at port ${PORT}`);
+  });
